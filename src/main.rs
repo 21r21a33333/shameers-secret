@@ -1,17 +1,14 @@
-use std::ops::BitOrAssign;
-
 // shamers secreat sharing
 use num_bigint::BigInt;
 
 use rand::Rng;
+use std::str::FromStr;
 
 pub mod models;
 pub mod tests;
 
 pub use models::fraction;
 pub use models::Points;
-
-
 
 // Function to perform the secret
 // sharing algorithm and encode the
@@ -26,16 +23,16 @@ fn secreate_sharing(S: BigInt, N: i128, K: i32, Points: &mut Vec<Points>) {
 
     for i in 1..K {
         let mut p: BigInt = BigInt::from(0);
-        while (p != BigInt::ZERO) {
+        while (p == BigInt::ZERO) {
             // assigning random number to the polynomial as a coefficient
-            p = rand::thread_rng().gen_range(BigInt::from(1)..BigInt::from(1000));
+            p = rand::thread_rng().gen_range(BigInt::from(1)..BigInt::from(1000000000));
         }
         poly[i as usize] = p;
     }
 
     // generating n points from the polynomial
     for j in 1..N {
-        let x: BigInt = BigInt::from(j);
+        let x: BigInt = BigInt::from(rand::thread_rng().gen_range(1..100000));
         let mut y: BigInt = BigInt::from(0);
         for i in 0..K {
             y = y + &poly[i as usize] * x.pow(i as u32);
@@ -60,7 +57,10 @@ fn generate_secret_key(x: Vec<BigInt>, y: Vec<BigInt>, M: i128) -> BigInt {
             if i != j {
                 let temp = fraction::new(-x[j as usize].clone(), BigInt::from(1));
                 l = l.mul(&temp);
-                let temp = fraction::new(x[i as usize].clone() - x[j as usize].clone(), BigInt::from(1));
+                let temp = fraction::new(
+                    x[i as usize].clone() - x[j as usize].clone(),
+                    BigInt::from(1),
+                );
                 l = l.div(&temp);
             }
         }
@@ -86,10 +86,16 @@ pub fn operation(S: BigInt, N: i128, M: i128, K: i32) -> Option<BigInt> {
     let mut y: Vec<BigInt> = vec![BigInt::from(0); M as usize];
 
     // use first K points to generate the secret key
+
     for i in 0..M {
         x[i as usize] = Points[i as usize].x.clone();
         y[i as usize] = Points[i as usize].y.clone();
+        println!("___________________");
+        println!("{:?}", x[i as usize]);
+        println!("{:?}", y[i as usize]);
+        println!("___________________");
     }
+
     let ret = generate_secret_key(x, y, M);
     println!("SECRET CODE IS {}", ret);
     Some(ret)
@@ -97,13 +103,12 @@ pub fn operation(S: BigInt, N: i128, M: i128, K: i32) -> Option<BigInt> {
 
 fn main() {
     let S: BigInt = BigInt::from(100);
-    let N: i128 = (10);
-    let K: i32 = 5;
+    let N: i128 = (11);
+    let K: i32 = 6;
 
-    let M: i128 = (6);
+    let M: i128 = (10);
 
     operation(S, N, M, K);
 }
-
 
 

@@ -1,9 +1,11 @@
-
-
 use crate::operation;
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use num_bigint::BigInt;
+
+    use crate::generate_secret_key;
 
     use super::*;
 
@@ -42,7 +44,6 @@ mod tests {
             }
         }
     }
-
 
     #[test]
     fn test_with_minimum_points() {
@@ -108,11 +109,47 @@ mod tests {
 
         match operation(S, N, M, K) {
             Some(_) => {
-                assert!(false, "Should not be able to reconstruct the secret with insufficient points");
+                assert!(
+                    false,
+                    "Should not be able to reconstruct the secret with insufficient points"
+                );
             }
             None => {
                 assert!(true);
             }
         }
     }
+
+    #[test]
+    fn test_generate_secret_key() {
+        let x = vec![
+            BigInt::from(64187),
+            BigInt::from(86161),
+            BigInt::from(71255),
+            BigInt::from(33632),
+            BigInt::from(85129),
+            BigInt::from(37211),
+            BigInt::from(61825),
+            BigInt::from(33993),
+            BigInt::from(43354),
+            BigInt::from(65949),
+        ];
+
+        let y = vec![
+            BigInt::from_str("83170346815119420729033463125487").unwrap(),
+            BigInt::from_str("362481456080081416671699581241167").unwrap(),
+            BigInt::from_str("140219838487651707565494163659775").unwrap(),
+            BigInt::from_str("3284733188830334278541021603812").unwrap(),
+            BigInt::from_str("341287068920226225205274744921615").unwrap(),
+            BigInt::from_str("5446187954478934605461249241967").unwrap(),
+            BigInt::from_str("68953115777245579114887248768975").unwrap(),
+            BigInt::from_str("3464846665902497988392574069775").unwrap(),
+            BigInt::from_str("11691785587361433033741245509040").unwrap(),
+            BigInt::from_str("95230067684814801669123102472975").unwrap(),
+        ];
+
+        let secret = generate_secret_key(x, y,10);
+        assert_eq!(secret, BigInt::from(100)); // Replace with the expected secret value
+    }
+
 }
