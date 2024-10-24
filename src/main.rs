@@ -1,8 +1,10 @@
 // shamers secreat sharing
 use num_bigint::BigInt;
 
+use num_traits::Num;
 use rand::Rng;
 use std::str::FromStr;
+use std::fs;
 
 pub mod models;
 pub mod tests;
@@ -101,14 +103,41 @@ pub fn operation(S: BigInt, N: i128, M: i128, K: i32) -> Option<BigInt> {
     Some(ret)
 }
 
-fn main() {
-    let S: BigInt = BigInt::from(100);
-    let N: i128 = (11);
-    let K: i32 = 6;
 
-    let M: i128 = (10);
+fn process_input_and_generate_secret(input: &serde_json::Value) -> BigInt {
+    // Parse N and K from the "keys" object
+    let n = input["keys"]["n"].as_i64().unwrap() as i128;  // N
+    let k = input["keys"]["k"].as_i64().unwrap() as i32;   // K
 
-    operation(S, N, M, K);
+    // Initialize vectors for x and y
+    let mut x: Vec<BigInt> = Vec::new();
+    let mut y: Vec<BigInt> = Vec::new();
+
+    // Iterate over the entries "1" to "10"
+    for i in 1..=n {
+        let key = i.to_string();
+        let base = input[&key]["base"].as_str().unwrap();
+        let value = input[&key]["value"].as_str().unwrap();
+
+        // Parse the base and value strings into BigInt
+        let base: u32 = base.parse().unwrap();
+        let bigint_value = BigInt::from_str_radix(value, base).unwrap();
+
+        // Store the index (i) as x[i-1] and the value as y[i-1]
+        x.push(BigInt::from(i));
+        y.push(bigint_value);
+    }
+
+    // Call the generate_secret_key function
+    let secret = generate_secret_key(x, y, k as i128);
+    secret
 }
 
+fn main() {
+    // Read the input data from the input.json file
+    let input_data = fs::read_to_string("input.json").expect("Unable to read file");
 
+    let input: serde_json::Value = serde_json::from_str(&input_data).unwrap();
+    let secret = process_input_and_generate_secret(&input);
+    println!("Generated secret: {}", secret);
+}
